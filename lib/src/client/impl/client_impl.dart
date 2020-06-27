@@ -159,6 +159,7 @@ class _ClientImpl implements Client {
   }
 
   void _handleException(ex) {
+    print("Handling exception");
     // Ignore exceptions while shutting down
     if (_clientClosed != null) {
       return;
