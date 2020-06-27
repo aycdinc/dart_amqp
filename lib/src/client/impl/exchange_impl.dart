@@ -65,7 +65,7 @@ class _ExchangeImpl implements Exchange {
   }
 
   Future<Consumer> bindQueueConsumer(String queueName, List<String> routingKeys,
-      {String consumerTag, bool noAck = true}) async {
+      {String consumerTag, bool noAck = true, bool passive = true}) async {
     // Fanout and headers exchanges do not need to specify any keys. Use the default one if none is specified
     if ((type == ExchangeType.FANOUT || type == ExchangeType.HEADERS) &&
         (routingKeys == null || routingKeys.isEmpty)) {
@@ -77,7 +77,7 @@ class _ExchangeImpl implements Exchange {
           "One or more routing keys needs to be specified for this exchange type");
     }
 
-    Queue queue = await channel.queue(queueName);
+    Queue queue = await channel.queue(queueName, passive: passive);
     for (String routingKey in routingKeys) {
       await queue.bind(this, routingKey);
     }

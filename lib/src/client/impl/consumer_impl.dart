@@ -32,7 +32,7 @@ class _ConsumerImpl implements Consumer {
   }
 
   void onMessage(DecodedMessageImpl serverMessage) {
-    // Ensure that messate contains a non-null property object
+    // Ensure that message contains a non-null property object
     serverMessage.properties ??= MessageProperties();
 
     _controller.add(_AmqpMessageImpl.fromDecodedMessage(this, serverMessage));
