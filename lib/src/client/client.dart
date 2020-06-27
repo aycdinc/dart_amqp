@@ -23,6 +23,8 @@ abstract class Client {
   /// the new [Channel]
   Future<Channel> channel();
 
+  Socket getSocket();
+
   /// Register listener for errors
   StreamSubscription<Exception> errorListener(void onData(Exception error),
       {Function onError, void onDone(), bool cancelOnError});

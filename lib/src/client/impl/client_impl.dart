@@ -87,6 +87,10 @@ class _ClientImpl implements Client {
     return _connected.future;
   }
 
+  Socket getSocket() {
+    return _socket;
+  }
+
   /// Check if a connection is currently in handshake state
   bool get handshaking =>
       _socket != null && _connected != null && !_connected.isCompleted;
@@ -225,6 +229,8 @@ class _ClientImpl implements Client {
     _connectionAttempt = 0;
     return _reconnect();
   }
+
+
 
   /// Shutdown any open channels and disconnect the socket. Return a [Future] to be completed
   /// when the client has shut down
