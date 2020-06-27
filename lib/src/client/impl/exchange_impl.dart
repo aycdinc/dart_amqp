@@ -77,7 +77,7 @@ class _ExchangeImpl implements Exchange {
           "One or more routing keys needs to be specified for this exchange type");
     }
 
-    Queue queue = await channel.queue(queueName, passive: passive);
+    Queue queue = await channel.queue(queueName, passive: true);
     for (String routingKey in routingKeys) {
       await queue.bind(this, routingKey);
     }
