@@ -50,8 +50,6 @@ class _ClientImpl implements Client {
 
     fs.then((Socket s) {
       _socket = s;
-      _setupPing();
-      //_socket.setRawOption(RawSocketOption.fromBool(RawSocketOption.levelSocket, option, true));
 
       // Bind processors and initiate handshake
       RawFrameParser(tuningSettings)
@@ -103,7 +101,7 @@ class _ClientImpl implements Client {
     options = options ?? {};
     options['compress'] = false != options['compress'];
 
-    var packet = {'type': type, 'data': data, 'options': options};
+    var packet = {'type': type};
     List<int> bytes = utf8.encode(jsonEncode(packet));
     _socket.add(bytes);
     _socket.flush();
