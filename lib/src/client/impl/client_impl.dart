@@ -58,6 +58,7 @@ class _ClientImpl implements Client {
           .transform(AmqpMessageDecoder().transformer)
           .listen(_handleMessage,
               onError: _handleException,
+              cancelOnError: true,
               onDone: () =>
                   _handleException(const SocketException("Socket closed")));
 
