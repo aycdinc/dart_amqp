@@ -94,4 +94,6 @@ abstract class Channel {
       {Function onError,
       void onDone(),
       bool cancelOnError});
+
+  void writeHeartbeat();
 }
