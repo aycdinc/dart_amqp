@@ -103,10 +103,8 @@ class _ClientImpl implements Client {
     options = options ?? {};
     options['compress'] = false != options['compress'];
 
-    FrameWriter writer = new FrameWriter();
-    Message message = new Message();
-    Uint8List message = Uint8List.fromList(
-        [8, 0, 0, 0, 0, 0, 0, 0, RawFrameParser.FRAME_TERMINATOR]);
+    FrameWriter writer = new FrameWriter(new TuningSettings());
+    Message message = ChannelPing();
     writer.writeMessage(0, message);
 
     /*
