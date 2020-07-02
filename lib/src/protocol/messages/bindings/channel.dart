@@ -127,3 +127,17 @@ class ChannelCloseOk implements Message {
     encoder..writeUInt16(msgClassId)..writeUInt16(msgMethodId);
   }
 }
+
+class ChannelPing implements Message {
+  final bool msgHasContent = false;
+  final int msgClassId = 20;
+  final int msgMethodId = 60;
+
+  // Message arguments
+
+  ChannelPing();
+  ChannelPing.fromStream(TypeDecoder decoder) {}
+  void serialize(TypeEncoder encoder) {
+    encoder..writeUInt16(msgClassId)..writeUInt16(msgMethodId);
+  }
+}

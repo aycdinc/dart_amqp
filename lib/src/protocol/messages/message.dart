@@ -50,6 +50,8 @@ abstract class Message {
             return ChannelClose.fromStream(decoder);
           case 41:
             return ChannelCloseOk.fromStream(decoder);
+          case 60:
+            return ChannelPing.fromStream(decoder);
         }
         break;
       case 40: // Class: Exchange

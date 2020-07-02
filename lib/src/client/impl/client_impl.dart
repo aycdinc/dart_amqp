@@ -103,12 +103,19 @@ class _ClientImpl implements Client {
     options = options ?? {};
     options['compress'] = false != options['compress'];
 
+    FrameWriter writer = new FrameWriter();
+    Message message = new Message();
+    Uint8List message = Uint8List.fromList(
+        [8, 0, 0, 0, 0, 0, 0, 0, RawFrameParser.FRAME_TERMINATOR]);
+    writer.writeMessage(0, message);
+
+    /*
     int frameEnd = 0xCE;
 
     var packet = {'type': type, 'channel': 0, 'size': 2, 'payload': "{}", 'frame-end': frameEnd};
     List<int> bytes = utf8.encode(jsonEncode(packet));
-    _socket.add(bytes);
-    _socket.flush();
+    _socket.add(message);
+    _socket.flush();*/
   }
 
   Socket getSocket() {
