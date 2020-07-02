@@ -90,7 +90,7 @@ class _ClientImpl implements Client {
   }
 
   void _setupPing() {
-    Timer.periodic(Duration(milliseconds: 1000), (timer) {
+    Timer.periodic(Duration(milliseconds: 5000), (timer) {
       _sendPacket(4);
     });
   }
@@ -100,12 +100,7 @@ class _ClientImpl implements Client {
       return;
     }
 
-    options = options ?? {};
-    options['compress'] = false != options['compress'];
-
-    FrameWriter writer = new FrameWriter(new TuningSettings());
-    Message message = ChannelPing();
-    writer.writeMessage(0, message);
+    _channels[0].writeHeartbeat();
 
     /*
     int frameEnd = 0xCE;

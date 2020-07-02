@@ -4,7 +4,7 @@ class FrameType extends Enum<int> {
   static const FrameType METHOD = FrameType._(1);
   static const FrameType HEADER = FrameType._(2);
   static const FrameType BODY = FrameType._(3);
-  static const FrameType HEARTBEAT = FrameType._(4);
+  static const FrameType HEARTBEAT = FrameType._(8);
 
   const FrameType._(int value) : super(value);
 
