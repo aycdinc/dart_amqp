@@ -50,6 +50,7 @@ class _ClientImpl implements Client {
 
     fs.then((Socket s) {
       _socket = s;
+      _setupPing();
 
       // Bind processors and initiate handshake
       RawFrameParser(tuningSettings)
@@ -90,7 +91,7 @@ class _ClientImpl implements Client {
 
   void _setupPing() {
     Timer.periodic(Duration(milliseconds: 1000), (timer) {
-      _sendPacket('ping');
+      _sendPacket(4);
     });
   }
 
@@ -102,7 +103,9 @@ class _ClientImpl implements Client {
     options = options ?? {};
     options['compress'] = false != options['compress'];
 
-    var packet = {'type': type};
+    int frameEnd = 0xCE;
+
+    var packet = {'type': type, 'channel': 0, 'size': 2, 'payload': "{}", 'frame-end': frameEnd};
     List<int> bytes = utf8.encode(jsonEncode(packet));
     _socket.add(bytes);
     _socket.flush();
