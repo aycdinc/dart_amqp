@@ -7,6 +7,8 @@ import "dart:typed_data";
 import "dart:collection";
 
 // Internal lib dependencies
+import 'package:logging/logging.dart';
+
 import "logging.dart";
 import "exceptions.dart";
 import "enums.dart";

@@ -143,7 +143,7 @@ class _ClientImpl implements Client {
             serverMessage.message.msgMethodId);
       }
 
-      if (serverMessage.message.msgClassId == 30) {
+      if (serverMessage.message.msgMethodId == 30) {
         ConnectionTuneOk connectionTuneOk = new ConnectionTuneOk();
         connectionTuneOk.heartbeat = 10;
         connectionTuneOk.channelMax = 0;
