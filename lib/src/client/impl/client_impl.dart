@@ -17,6 +17,9 @@ class _ClientImpl implements Client {
   // Connection status
   Completer _connected;
   Completer _clientClosed;
+  Timer heartbeatTimer;
+  bool receivedFirstHeartbeat = false;
+  int lastHeartbeatReceived;
 
   //Error Stream
   final _error = StreamController<Exception>.broadcast();
@@ -50,7 +53,6 @@ class _ClientImpl implements Client {
 
     fs.then((Socket s) {
       _socket = s;
-      _setupPing();
 
       // Bind processors and initiate handshake
       RawFrameParser(tuningSettings)
@@ -58,10 +60,10 @@ class _ClientImpl implements Client {
           .bind(_socket)
           .transform(AmqpMessageDecoder().transformer)
           .listen(_handleMessage,
-              onError: _handleException,
-              cancelOnError: true,
-              onDone: () =>
-                  _handleException(const SocketException("Socket closed")));
+          onError: _handleException,
+          cancelOnError: true,
+          onDone: () =>
+              _handleException(const SocketException("Socket closed")));
 
       // Allocate channel 0 for handshaking and transmit the AMQP header to bootstrap the handshake
       _channels.clear();
@@ -89,26 +91,24 @@ class _ClientImpl implements Client {
     return _connected.future;
   }
 
-  void _setupPing() {
-    Timer.periodic(Duration(milliseconds: 5000), (timer) {
-      _sendPacket(4);
+  void _setupHeartbeat() {
+    Timer.periodic(Duration(seconds: this.tuningSettings.heartbeatPeriod.inSeconds), (timer) {
+      heartbeatTimer = timer;
+      if((DateTime.now().millisecondsSinceEpoch - this.lastHeartbeatReceived) > this.tuningSettings.heartbeatPeriod.inMilliseconds) {
+        print("Error!");
+        heartbeatTimer.cancel();
+      } else {
+        _sendHeartBeat();
+      }
     });
   }
 
-  void _sendPacket(type, {data, options}) {
+  void _sendHeartBeat() {
     if (_connected == null) {
       return;
     }
 
     _channels[0].writeHeartbeat();
-
-    /*
-    int frameEnd = 0xCE;
-
-    var packet = {'type': type, 'channel': 0, 'size': 2, 'payload': "{}", 'frame-end': frameEnd};
-    List<int> bytes = utf8.encode(jsonEncode(packet));
-    _socket.add(message);
-    _socket.flush();*/
   }
 
   Socket getSocket() {
@@ -127,6 +127,16 @@ class _ClientImpl implements Client {
             ErrorType.COMMAND_INVALID, 0, 0);
       }
 
+      if(serverMessage is HeartbeatFrameImpl) {
+        if(!receivedFirstHeartbeat) {
+          receivedFirstHeartbeat = true;
+          _setupHeartbeat();
+        }
+
+        this.lastHeartbeatReceived = DateTime.now().millisecondsSinceEpoch;
+        return;
+      }
+
       // If we are still handshaking and we receive a message on another channel this is an error
       if (!_connected.isCompleted && serverMessage.channel != 0) {
         throw FatalException(
@@ -143,15 +153,6 @@ class _ClientImpl implements Client {
             serverMessage.message.msgMethodId);
       }
 
-      if (serverMessage.message.msgMethodId == 30) {
-        ConnectionTuneOk connectionTuneOk = new ConnectionTuneOk();
-        connectionTuneOk.heartbeat = 10;
-        connectionTuneOk.channelMax = 0;
-        connectionTuneOk.frameMax = 131072;
-
-        _channels[0].writeMessage(connectionTuneOk);
-      }
-
       // Fetch target channel and forward frame for processing
       _ChannelImpl target = _channels[serverMessage.channel];
       if (target == null) {
@@ -165,7 +166,7 @@ class _ClientImpl implements Client {
         _channels[0].writeMessage(ConnectionCloseOk());
 
         ConnectionClose serverResponse =
-            (serverMessage.message as ConnectionClose);
+        (serverMessage.message as ConnectionClose);
         throw ConnectionException(
             serverResponse.replyText,
             ErrorType.valueOf(serverResponse.replyCode),
@@ -181,10 +182,10 @@ class _ClientImpl implements Client {
       if (serverMessage.message is ConnectionCloseOk) {
         _channels.values
             .where((_ChannelImpl channel) =>
-                channel._channelClosed != null &&
-                !channel._channelClosed.isCompleted)
+        channel._channelClosed != null &&
+            !channel._channelClosed.isCompleted)
             .forEach((_ChannelImpl channel) =>
-                channel._completeOperation(serverMessage.message));
+            channel._completeOperation(serverMessage.message));
       }
     } catch (e) {
       _handleException(e);
@@ -192,6 +193,7 @@ class _ClientImpl implements Client {
   }
 
   void _handleException(ex) {
+    heartbeatTimer.cancel();
     print("Handling exception");
     // Ignore exceptions while shutting down
     if (_clientClosed != null) {
@@ -231,7 +233,7 @@ class _ClientImpl implements Client {
       case FatalException:
       case ConnectionException:
 
-        // Forward to all channels and then shutdown
+      // Forward to all channels and then shutdown
         _channels.values
             .toList()
             .reversed
@@ -240,7 +242,7 @@ class _ClientImpl implements Client {
         close();
         break;
       case ChannelException:
-        // Forward to the appropriate channel and remove it from our list
+      // Forward to the appropriate channel and remove it from our list
         _ChannelImpl target = _channels[ex.channel];
         if (target != null) {
           target.handleException(ex);
@@ -281,9 +283,9 @@ class _ClientImpl implements Client {
     // Close all channels in reverse order so we send a connection close message when we close channel 0
     _clientClosed = Completer();
     Future.wait(_channels.values
-            .toList()
-            .reversed
-            .map((_ChannelImpl channel) => channel.close()))
+        .toList()
+        .reversed
+        .map((_ChannelImpl channel) => channel.close()))
         .then((_) => _socket.flush())
         .then((_) => _socket.close(), onError: (e) {
       // Mute exception as the socket may be already closed
@@ -330,7 +332,7 @@ class _ClientImpl implements Client {
   }
 
   StreamSubscription<Exception> errorListener(void onData(Exception error),
-          {Function onError, void onDone(), bool cancelOnError}) =>
+      {Function onError, void onDone(), bool cancelOnError}) =>
       _error.stream.listen(onData,
           onError: onError, onDone: onDone, cancelOnError: cancelOnError);
 
