@@ -131,17 +131,13 @@ class _ChannelImpl implements Channel {
 
         // Update tuning settings unless our client forces a specific value
         _client.tuningSettings
-          ..maxFrameSize = serverResponse.frameMax
-          ..maxChannels = _client.tuningSettings.maxChannels > 0
-              ? _client.tuningSettings.maxChannels
-              : serverResponse.channelMax
-          ..heartbeatPeriod = Duration.zero;
+          ..maxFrameSize = serverResponse.frameMax;
 
         // Respond with the mirrored tuning settings
         ConnectionTuneOk clientResponse = ConnectionTuneOk()
           ..frameMax = serverResponse.frameMax
           ..channelMax = _client.tuningSettings.maxChannels
-          ..heartbeat = 0;
+          ..heartbeat = _client.tuningSettings.heartbeatPeriod.inSeconds;
 
         _lastHandshakeMessage = clientResponse;
         writeMessage(clientResponse);
