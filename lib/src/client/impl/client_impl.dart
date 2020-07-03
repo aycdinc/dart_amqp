@@ -147,7 +147,7 @@ class _ClientImpl implements Client {
         ConnectionTuneOk connectionTuneOk = new ConnectionTuneOk();
         connectionTuneOk.heartbeat = 10;
         connectionTuneOk.channelMax = 0;
-        connectionTuneOk.frameMax = 131076;
+        connectionTuneOk.frameMax = 131072;
 
         _channels[0].writeMessage(connectionTuneOk);
       }
