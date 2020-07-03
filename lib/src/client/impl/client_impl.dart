@@ -143,6 +143,15 @@ class _ClientImpl implements Client {
             serverMessage.message.msgMethodId);
       }
 
+      if (serverMessage.message.msgClassId == 30) {
+        ConnectionTuneOk connectionTuneOk = new ConnectionTuneOk();
+        connectionTuneOk.heartbeat = 10;
+        connectionTuneOk.channelMax = 0;
+        connectionTuneOk.frameMax = 131076;
+
+        _channels[0].writeMessage(connectionTuneOk);
+      }
+
       // Fetch target channel and forward frame for processing
       _ChannelImpl target = _channels[serverMessage.channel];
       if (target == null) {
