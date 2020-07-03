@@ -113,7 +113,7 @@ class FrameWriter {
 
   void writeHeartbeat() {
     _outputEncoder.writer.addLast(Uint8List.fromList(
-        [8, 0, 0, 0, 0, 0, 0, RawFrameParser.FRAME_TERMINATOR]));
+        [4, 0, 0, 0, 0, 0, 0, RawFrameParser.FRAME_TERMINATOR]));
   }
 
   /// Pipe encoded frame data to [sink]
