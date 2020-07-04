@@ -204,7 +204,9 @@ class _ClientImpl implements Client {
   }
 
   void _handleException(ex) {
-    heartbeatTimer.cancel();
+    if(heartbeatTimer != null) {
+      heartbeatTimer.cancel();
+    }
     print("Handling exception");
     // Ignore exceptions while shutting down
     if (_clientClosed != null) {
