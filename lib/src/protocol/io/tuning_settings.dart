@@ -5,5 +5,5 @@ class TuningSettings {
 
   int maxFrameSize = 0;
 
-  Duration heartbeatPeriod = const Duration(milliseconds: 5000);
+  Duration heartbeatPeriod = const Duration(milliseconds: 10000);
 }

@@ -20,6 +20,7 @@ class _ClientImpl implements Client {
   Timer heartbeatTimer;
   bool receivedFirstHeartbeat = false;
   int lastHeartbeatReceived;
+  Function heartbeatCallback;
 
   //Error Stream
   final _error = StreamController<Exception>.broadcast();
@@ -94,8 +95,10 @@ class _ClientImpl implements Client {
   void _setupHeartbeat() {
     Timer.periodic(Duration(seconds: this.tuningSettings.heartbeatPeriod.inSeconds), (timer) {
       heartbeatTimer = timer;
-      if((DateTime.now().millisecondsSinceEpoch - this.lastHeartbeatReceived) > this.tuningSettings.heartbeatPeriod.inMilliseconds) {
+      if((DateTime.now().millisecondsSinceEpoch - this.lastHeartbeatReceived) >
+          (this.tuningSettings.heartbeatPeriod.inMilliseconds + (this.tuningSettings.heartbeatPeriod.inMilliseconds * 0.2).floor())) {
         print("Error!");
+        _onHeartbeatFailed();
         heartbeatTimer.cancel();
       } else {
         _sendHeartBeat();
@@ -190,6 +193,14 @@ class _ClientImpl implements Client {
     } catch (e) {
       _handleException(e);
     }
+  }
+
+  void registerHeartbeatCallback(Function() f) {
+    this.heartbeatCallback = f;
+  }
+
+  void _onHeartbeatFailed() {
+    this.heartbeatCallback();
   }
 
   void _handleException(ex) {
