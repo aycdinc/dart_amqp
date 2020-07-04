@@ -18,7 +18,6 @@ class _ClientImpl implements Client {
   Completer _connected;
   Completer _clientClosed;
   Timer heartbeatTimer;
-  bool receivedFirstHeartbeat = false;
   int lastHeartbeatReceived;
   Function heartbeatCallback;
 
@@ -28,6 +27,7 @@ class _ClientImpl implements Client {
   _ClientImpl({ConnectionSettings settings}) {
     // Use defaults if no settings specified
     this.settings = settings == null ? ConnectionSettings() : settings;
+    if(this.settings.heartbeat.inSeconds != 0) this.settings.tuningSettings.heartbeatPeriod = this.settings.heartbeat;
   }
 
   /// Attempt to reconnect to the server. If the attempt fails, it will be retried after
@@ -89,6 +89,8 @@ class _ClientImpl implements Client {
       }
     });
 
+    this.lastHeartbeatReceived = DateTime.now().millisecondsSinceEpoch;
+    _setupHeartbeat();
     return _connected.future;
   }
 
@@ -131,11 +133,6 @@ class _ClientImpl implements Client {
       }
 
       if(serverMessage is HeartbeatFrameImpl) {
-        if(!receivedFirstHeartbeat) {
-          receivedFirstHeartbeat = true;
-          _setupHeartbeat();
-        }
-
         this.lastHeartbeatReceived = DateTime.now().millisecondsSinceEpoch;
         return;
       }

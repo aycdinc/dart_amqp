@@ -19,6 +19,8 @@ class ConnectionSettings {
   // Authentication provider
   Authenticator authProvider;
 
+  Duration heartbeat;
+
   // Protocol version
   int amqpProtocolVersion = 0;
   int amqpMajorVersion = 0;
@@ -38,6 +40,7 @@ class ConnectionSettings {
     this.authProvider = const PlainAuthenticator("guest", "guest"),
     this.maxConnectionAttempts = 1,
     this.reconnectWaitTime = const Duration(milliseconds: 1500),
+    this.heartbeat = const Duration(seconds: 0),
     this.tuningSettings,
     this.tlsContext,
   }) {
