@@ -99,9 +99,8 @@ class _ClientImpl implements Client {
       heartbeatTimer = timer;
       if((DateTime.now().millisecondsSinceEpoch - this.lastHeartbeatReceived) >
           (this.tuningSettings.heartbeatPeriod.inMilliseconds + (this.tuningSettings.heartbeatPeriod.inMilliseconds * 0.2).floor())) {
-        print("Error!");
-        _onHeartbeatFailed();
-        heartbeatTimer.cancel();
+            _onHeartbeatFailed();
+            heartbeatTimer.cancel();
       } else {
         _sendHeartBeat();
       }
@@ -281,6 +280,10 @@ class _ClientImpl implements Client {
   /// Shutdown any open channels and disconnect the socket. Return a [Future] to be completed
   /// when the client has shut down
   Future close() {
+    if(heartbeatTimer != null) {
+      heartbeatTimer.cancel();
+    }
+
     if (_socket == null) {
       return Future.value();
     }
