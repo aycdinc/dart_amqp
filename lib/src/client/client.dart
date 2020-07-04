@@ -25,6 +25,8 @@ abstract class Client {
 
   Socket getSocket();
 
+  void registerHeartbeatCallback(Function() f);
+
   /// Register listener for errors
   StreamSubscription<Exception> errorListener(void onData(Exception error),
       {Function onError, void onDone(), bool cancelOnError});
